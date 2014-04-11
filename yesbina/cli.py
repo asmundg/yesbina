@@ -1,4 +1,5 @@
 import hy
 import app
 
-app.app.run(debug=True)
+if __name__ == '__main__':
+    app.app.run(debug=True)
