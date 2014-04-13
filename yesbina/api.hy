@@ -20,11 +20,11 @@
 
 (defn parse-timestamp [time]
   (let [[tz (dateutil.tz.gettz "Europe/Oslo")]]
-    (kwapply
-     ((getattr
-       (dateutil.parser.parse
-        (.strip time))
-       "replace")) {"tzinfo" tz})))
+    (apply
+     (.
+      (dateutil.parser.parse
+       (.strip time))
+      replace) [] {"tzinfo" tz})))
 
 (defn extract-date [tag]
   ((getattr
@@ -54,9 +54,9 @@
                    (.strip))}
    [tag (.select
          (fetch-page
-          (kwapply (departure_link.format)
-                   {"stopid" (custom-quote stopid)
-                             "line" line}))
+          (apply departure_link.format []
+                 {"stopid" (custom-quote stopid)
+                           "line" line}))
          "a.tm-li-avganger")]))
 
 (defn line-stops [line]
