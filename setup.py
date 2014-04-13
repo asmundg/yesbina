@@ -12,5 +12,5 @@ setup(name='yesbina',
                         'sleekxmpp'],
       entry_points={
           'console_scripts': [
-              'yesbina-xmpp-bot = yesbina.xmpp:main']
+              'yesbina-xmpp-bot = yesbina.xmpp_cli:main']
           })
