@@ -36,6 +36,13 @@
   (.replace url " " "+"))
 
 (defn get-departures [stopid line]
+  (formatted-departure
+   (fetch-page
+    (apply departure_link.format []
+           {"stopid" (custom-quote stopid)
+                     "line" line}))))
+
+(defn formatted-departure [page]
   (list-comp
    {"time" (->
             (.join "T"
@@ -53,10 +60,7 @@
                    (.get_text)
                    (.strip))}
    [tag (.select
-         (fetch-page
-          (apply departure_link.format []
-                 {"stopid" (custom-quote stopid)
-                           "line" line}))
+         page
          "a.tm-li-avganger")]))
 
 (defn line-stops [line]
