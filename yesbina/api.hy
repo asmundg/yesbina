@@ -27,10 +27,10 @@
       replace) [] {"tzinfo" tz})))
 
 (defn extract-date [tag]
-  ((getattr
+  ((.
     (re.match ".*startdate=([0-9\.]+)"
               (get tag "href"))
-    "group") (int 1)))
+    group) (int 1)))
 
 (defn custom-quote [url]
   (.replace url " " "+"))
