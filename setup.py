@@ -8,6 +8,7 @@ setup(name='yesbina',
                         'flask-jsonify-emidln',
                         'beautifulsoup4',
                         'hy',
+                        'python-memcached',
                         'requests',
                         'sleekxmpp'],
       entry_points={

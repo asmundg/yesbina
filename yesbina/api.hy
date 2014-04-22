@@ -6,6 +6,7 @@
 (import dateutil.tz)
 (import requests)
 
+(import yesbina.stops)
 
 (def root_url "http://rp.tromskortet.no/scripts/TravelMagic/TravelMagicWE.dll")
 (def departure_link "/avgangsinfo?from={stopid}&linjer={line}&context=wap.xhtml")
@@ -63,17 +64,8 @@
          page
          "a.tm-li-avganger")]))
 
-(defn line-stops [line]
-  (cond [(= line "28") ["Hamna skole øst (Tromsø)"
-                        "Giæverbukta (Tromsø)"
-                        "Sjøgata S2 (Tromsø)"
-                        "Fr. Langes Gate F4 (Tromsø)"
-                        "Solligården (Tromsø)"]]
-        [(= line "32") ["Fiskekroken (Tromsø)"
-                        "Fr. Langes gate F6 (Tromsø)"]]))
-
 (defn interesting-departures [line]
   (list-comp
    {"stop" stop
     "departure" (get (get-departures stop line) 0)}
-   [stop (line-stops line)]))
+   [stop (yesbina.stops.important-stops-for-line line)]))
