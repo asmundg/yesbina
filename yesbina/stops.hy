@@ -1,42 +1,20 @@
-(require hy.contrib.anaphoric)
 (import json)
 
-(import memcache)
 (import requests)
 
-(def search_url "http://www.tromskortet.no/autocompleteproxy.php?limit=25&q={}")
+(def stop_url "http://rp.tromskortet.no/scripts/TravelMagic/TravelMagicWE.dll/mapjson?x1=18.460998017578163&x2=19.414061982421913&y1=69.50862788969137&y2=69.79513831078665")
 
-(defn alphabet []
-  (list-comp
-   (chr x) (x (range (ord "a") (+ (ord "z") 1)))))
+(defn important-stops []
+  (dict-comp
+   (get obj "n") (get obj "l")
+   [obj (json.loads
+         (. (requests.get stop_url) text))]))
 
-(defn all-stops []
-  (list-comp
-   (stops-with-prefix prefix)
-   (prefix (alphabet))))
+(defn important-stops-for-line [line]
+  (let [[all-stops (important-stops)]
+        [stops []]]
+    (do (for [stop all-stops]
+          (if (.__contains__ (get all-stops stop) (unicode line))
+            (.append stops stop)))
+        stops)))
 
-(defn online-stops [prefix]
-  (print prefix)
-  (json.loads
-   (. (requests.get (.format search_url prefix)) text)))
-
-(defn cached [func]
-  (fn [prefix]
-    (let [[mc (memcache.Client ["127.0.0.1:11211"])]
-          [value (mc.get prefix)]]
-      (if (none? value)
-        (let [[result (func prefix)]]
-          (mc.set prefix result)
-          result)
-        value))))
-
-(with-decorator cached
-  (defn stops-with-prefix [prefix]
-    (let [[stops (online-stops prefix)]]
-      (if (= (len stops) 25)
-        (ap-reduce (+ it acc)
-                   (list-comp (stops-with-prefix (+ prefix subprefix))
-                              (subprefix (alphabet))))
-        stops))))
-
-(print (all-stops))
