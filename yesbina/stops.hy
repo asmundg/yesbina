@@ -11,10 +11,7 @@
          (. (requests.get stop_url) text))]))
 
 (defn important-stops-for-line [line]
-  (let [[all-stops (important-stops)]
-        [stops []]]
-    (do (for [stop all-stops]
-          (if (.__contains__ (get all-stops stop) (unicode line))
-            (.append stops stop)))
-        stops)))
-
+  (let [[all-stops (important-stops)]]
+    (list-comp stop
+               [stop all-stops]
+               (.__contains__ (get all-stops stop) (unicode line)))))
