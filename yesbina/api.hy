@@ -4,19 +4,16 @@
 (import [bs4 [BeautifulSoup]])
 (import dateutil.parser)
 (import dateutil.tz)
-(import requests)
+(import grequests)
 
 (import yesbina.stops)
 
-(def root_url "http://rp.tromskortet.no/scripts/TravelMagic/TravelMagicWE.dll")
-(def departure_link "/avgangsinfo?from={stopid}&linjer={line}&context=wap.xhtml")
+(def departure_link "http://rp.tromskortet.no/scripts/TravelMagic/TravelMagicWE.dll/avgangsinfo?from={stopid}&linjer={line}&context=wap.xhtml")
 
-(defn fetch-page [link]
-  (let [[url (+ root_url link)]]
-    (->
-     (requests.get url)
-     (. text)
-     (BeautifulSoup))))
+(defn parse-page [page]
+  (->
+   (. page text)
+   (BeautifulSoup)))
 
 (defn parse-timestamp [time]
   (let [[tz (dateutil.tz.gettz "Europe/Oslo")]]
@@ -63,12 +60,19 @@
          "a.tm-li-avganger")]))
 
 (defn interesting-departures [line]
-  (list-comp
-   {"stop" stop
-    "departure"
-    (->
-     (get-departures-url stop line)
-     (fetch-page)
-     (formatted-departures)
-     (get 0))}
-   [stop (yesbina.stops.important-stops-for-line line)]))
+  (let [[stops (yesbina.stops.important-stops-for-line line)]
+        [departures
+         (grequests.map
+          (list-comp
+           (grequests.get
+            (.encode
+             (get-departures-url stop line)
+             "utf-8")) [stop stops]))]]
+    (list-comp
+     {"stop" stop
+      "departure"
+      (->
+       (parse-page page)
+       (formatted-departures)
+       (get 0))}
+     [[stop page] (zip stops departures)])))
