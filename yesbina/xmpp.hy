@@ -33,7 +33,6 @@
          (.send))))]])
 
 (defn fmt [data]
-  (print data)
   (.join "\n"
          (list-comp (.format "{} -> {} @ {}"
                              (->
