@@ -1,19 +1,32 @@
+(import json)
 (import re)
-(import urllib)
 
 (import [bs4 [BeautifulSoup]])
 (import dateutil.parser)
 (import dateutil.tz)
 (import grequests)
 
-(import yesbina.stops)
+(import [yesbina.bootstrap [important-stops-for-line]])
 
-(def departure_link "http://rp.tromskortet.no/scripts/TravelMagic/TravelMagicWE.dll/avgangsinfo?from={stopid}&linjer={line}&context=wap.xhtml")
+(def departure-link
+  (+ "http://rp.tromskortet.no/scripts/TravelMagic/TravelMagicWE.dll"
+     "/avgangsinfo?from={stopid}&linjer={line}&context=wap.xhtml"))
 
 (defn parse-page [page]
   (->
    (. page text)
    (BeautifulSoup)))
+
+(defn parallel-fetch [urls]
+  (print urls)
+  (list-comp
+   (parse-page page)
+   [page
+    (grequests.map
+     (list-comp
+      (grequests.get
+       (url.encode "utf-8"))
+      [url urls]))]))
 
 (defn parse-timestamp [time]
   (let [[tz (dateutil.tz.gettz "Europe/Oslo")]]
@@ -29,14 +42,6 @@
     (re.match ".*startdate=([0-9\.]+)"
               (get tag "href"))
     group) (int 1)))
-
-(defn custom-quote [url]
-  (.replace url " " "+"))
-
-(defn get-departures-url [stopid line]
-  (apply departure_link.format []
-         {"stopid" (custom-quote stopid)
-          "line" line}))
 
 (defn formatted-departures [page]
   (list-comp
@@ -59,20 +64,18 @@
          page
          "a.tm-li-avganger")]))
 
+(defn departures-for-stop [line stops]
+  (parallel-fetch
+   (list-comp
+    (apply departure-link.format []
+           {"stopid" (stop.replace " " "+")
+            "line" line})
+    [stop stops])))
+
 (defn interesting-departures [line]
-  (let [[stops (yesbina.stops.important-stops-for-line line)]
-        [departures
-         (grequests.map
-          (list-comp
-           (grequests.get
-            (.encode
-             (get-departures-url stop line)
-             "utf-8")) [stop stops]))]]
+  (let [[stops (important-stops-for-line line)]
+        [departures (departures-for-stop line stops)]]
     (list-comp
      {"stop" stop
-      "departure"
-      (->
-       (parse-page page)
-       (formatted-departures)
-       (get 0))}
+      "departure" (get (formatted-departures page) 0)}
      [[stop page] (zip stops departures)])))
