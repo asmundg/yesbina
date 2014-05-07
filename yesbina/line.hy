@@ -1,7 +1,7 @@
 (import re)
 
-(import [yesbina.api [departures-for-stop
-                      parallel-fetch]]
+(import [yesbina.common  [parallel-fetch]]
+        [yesbina.departure [departures-from-stops]]
         [yesbina.bootstrap [important-stops-for-line]])
 
 (def trip-info-url
@@ -36,15 +36,16 @@
   """
    For a list of trip numbers, return the set of all stops they pass.
   """
-  (set
-   (flatten
-    (list-comp
-     (find-stops page)
-     [page
-      (parallel-fetch
-       (list-comp
-        (apply trip-info-url.format [] {"trip" trip})
-        [trip trips]))]))))
+  (list
+   (set
+    (flatten
+     (list-comp
+      (find-stops page)
+      [page
+       (parallel-fetch
+        (list-comp
+         (apply trip-info-url.format [] {"trip" trip})
+         [trip trips]))])))))
 
 (defn all-stops-for-line [line]
   """
@@ -53,5 +54,5 @@
   (trip-stops
    (list-comp
     (find-tripno departure-page)
-    [departure-page (departures-for-stop line (important-stops-for-line line))])))
+    [departure-page (departures-from-stops line (important-stops-for-line line))])))
 

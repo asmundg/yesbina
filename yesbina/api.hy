@@ -1,32 +1,14 @@
+(import heapq)
 (import json)
 (import re)
 
-(import [bs4 [BeautifulSoup]])
 (import dateutil.parser)
 (import dateutil.tz)
-(import grequests)
+(import [Levenshtein [jaro-winkler]])
 
 (import [yesbina.bootstrap [important-stops-for-line]])
-
-(def departure-link
-  (+ "http://rp.tromskortet.no/scripts/TravelMagic/TravelMagicWE.dll"
-     "/avgangsinfo?from={stopid}&linjer={line}&context=wap.xhtml"))
-
-(defn parse-page [page]
-  (->
-   (. page text)
-   (BeautifulSoup)))
-
-(defn parallel-fetch [urls]
-  (print urls)
-  (list-comp
-   (parse-page page)
-   [page
-    (grequests.map
-     (list-comp
-      (grequests.get
-       (url.encode "utf-8"))
-      [url urls]))]))
+(import yesbina.line)
+(import [yesbina.departure [departures-from-stops]])
 
 (defn parse-timestamp [time]
   (let [[tz (dateutil.tz.gettz "Europe/Oslo")]]
@@ -64,18 +46,31 @@
          page
          "a.tm-li-avganger")]))
 
-(defn departures-for-stop [line stops]
-  (parallel-fetch
-   (list-comp
-    (apply departure-link.format []
-           {"stopid" (stop.replace " " "+")
-            "line" line})
-    [stop stops])))
-
 (defn interesting-departures [line]
   (let [[stops (important-stops-for-line line)]
-        [departures (departures-for-stop line stops)]]
+        [departures (departures-from-stops line stops)]]
     (list-comp
      {"stop" stop
       "departure" (get (formatted-departures page) 0)}
      [[stop page] (zip stops departures)])))
+
+
+(defn stop-at-line [name line]
+  """
+   Given a name, find the stop that most closely matches this along the given
+   line
+  """
+  (let [[stops (yesbina.line.all-stops-for-line line)]]
+    (get (heapq.nlargest 1 stops (lambda [n] (jaro-winkler name n))) 0)))
+
+(defn departures-from-stop [name line]
+  """
+   Given a name, find the stop that most closely matches this along the given
+   line and format the next departures from it
+  """
+  (let [[stop (stop-at-line name line)]]
+    [{"stop" stop
+      "departure" (-> (departures-from-stops line [stop])
+                      (get 0)
+                      (formatted-departures)
+                      (get 0))}]))

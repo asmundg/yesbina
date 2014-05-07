@@ -10,7 +10,8 @@ setup(name='yesbina',
                         'hy',
                         'grequests',
                         'requests',
-                        'sleekxmpp'],
+                        'sleekxmpp',
+                        'python-Levenshtein'],
       entry_points={
           'console_scripts': [
               'yesbina-xmpp-bot = yesbina.xmpp_cli:main']
