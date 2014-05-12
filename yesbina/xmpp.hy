@@ -24,20 +24,21 @@
       (if (.__contains__ ["chat" "normal"] (get msg "type"))
         (->
          (dispatch (get msg "body"))
-         (. data)
-         (json.loads)
          (fmt)
          (msg.reply)
          (.send))))]])
 
 (defn dispatch [body]
   (let [[msg (body.strip)]]
-    (cond [(re.match "^[0-9]+$" msg)
-           (yesbina.app.interesting-departures msg)]
-          [(re.match "^[0-9]+ .*$" msg)
-           (yesbina.app.departures
-            (.decode (get (msg.split) 1) "utf-8")
-            (get (msg.split) 0))])))
+    (->
+     (cond [(re.match "^[0-9]+$" msg)
+            (yesbina.app.interesting-departures msg)]
+           [(re.match "^[0-9]+ .*$" msg)
+            (yesbina.app.departures
+             (.decode (get (msg.split) 1) "utf-8")
+             (get (msg.split) 0))])
+     (. data)
+     (json.loads))))
 
 (defn fmt [data]
   (.join "\n"
