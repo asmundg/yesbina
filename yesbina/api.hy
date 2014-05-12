@@ -51,7 +51,7 @@
         [departures (departures-from-stops line stops)]]
     (list-comp
      {"stop" stop
-      "departure" (get (formatted-departures page) 0)}
+      "departures" (formatted-departures page)}
      [[stop page] (zip stops departures)])))
 
 
@@ -70,7 +70,6 @@
   """
   (let [[stop (stop-at-line name line)]]
     [{"stop" stop
-      "departure" (-> (departures-from-stops line [stop])
-                      (get 0)
-                      (formatted-departures)
-                      (get 0))}]))
+      "departures" (-> (departures-from-stops line [stop])
+                       (get 0)
+                       (formatted-departures))}]))

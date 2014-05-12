@@ -41,24 +41,24 @@
 
 (defn fmt [data]
   (.join "\n"
-         (list-comp (.format "{} -> {} @ {}"
-                             (->
-                              (re.match "(.+?)(?: \(Tromsø\))?$"
-                                        (get entry "stop"))
-                              (.group (int 1)))
-                             (->
-                              (re.match "(?:mot )?(.+)"
-                                        (->
-                                         (get entry "departure")
-                                         (get "destination")))
-                              (.group (int 1)))
-                             (->
-                              (re.match ".*T([0-9]+:[0-9]+)"
-                                        (->
-                                         (get entry "departure")
-                                         (get "time")))
-                              (.group (int 1))))
-                    [entry data])))
+         (flatten
+          (list-comp
+           (list-comp
+            (.format "{} -> {} @ {}"
+                     (->
+                      (re.match "(.+?)(?: \(Tromsø\))?$"
+                                (get stop "stop"))
+                      (.group (int 1)))
+                     (->
+                      (re.match "(?:mot )?(.+)"
+                                (get departure "destination"))
+                      (.group (int 1)))
+                     (->
+                      (re.match ".*T([0-9]+:[0-9]+)"
+                                (get departure "time"))
+                      (.group (int 1))))
+            [departure (get stop "departures")])
+           [stop data]))))
 
 (defn main []
    (apply logging.basicConfig [] {"level" logging.DEBUG
