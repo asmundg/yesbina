@@ -1,0 +1,77 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate, compress']
+      User-Agent: [python-requests/2.2.1 CPython/2.7.6 Linux/3.13.0-32-generic]
+    method: GET
+    uri: http://rp.tromskortet.no/scripts/TravelMagic/TravelMagicWE.dll/mapjson?x1=18.460998017578163&x2=19.414061982421913&y1=69.50862788969137&y2=69.79513831078665
+  response:
+    body:
+      string: !!binary |
+        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
+        P/kwsnwtho+40WGvhPn+/wOpNBE6zyIAAA==
+    headers:
+      accept-ranges: [bytes]
+      age: ['0']
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-length: ['2761']
+      content-type: [text/x-json; charset=utf-8]
+      date: ['Mon, 28 Jul 2014 19:17:56 GMT']
+      vary: [Accept-Encoding]
+      via: [1.1 varnish]
+      x-backend: [backend_www4_rp_tromskortet_no]
+      x-cache: [MISS]
+      x-cacheable: ['NO:Not Cacheable']
+      x-varnish: ['1878437489']
+    status: {code: 200, message: OK}
+version: 1
