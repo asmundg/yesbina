@@ -12,13 +12,13 @@
   """
    Given a departure page, return the trip id.
   """
-  (->
-   (re.match ".*trip=([0-9]+)"
-             (->
-              (page.select "a.tm-li-avganger")
-              (get 0)
-              (get "href")))
-   (.group (int 1))))
+  (let [[avgang (let [[avganger (page.select "a.tm-li-avganger")]]
+                  (if avganger
+                    (get (get avganger 0) "href")
+                    ""))]]
+    (let [[match (re.match ".*trip=([0-9]+)" avgang)]]
+      (if match
+        (.group match (int 1))))))
 
 (defn find-stops [page]
   """
